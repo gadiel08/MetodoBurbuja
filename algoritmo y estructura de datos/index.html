@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metodo de la burbuja</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            gap: 10px;
+        }
+        .card {
+            width: 100px;
+            height: 150px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: black;
+            border-radius: 10px;
+            cursor: grab;
+            user-select: none;
+        }
+        .card.dragging {
+            background-color: red;
+            color: white;
+            cursor: grabbing;
+            opacity: 0.5;
+        }
+        .card-placeholder {
+            width: 100px;
+            height: 150px;
+            background-color: gray;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cards will be generated here by JavaScript -->
+    </div>
+
+    <script>
+        function generateRandomNumbers(count) {
+            const numbers = [];
+            while (numbers.length < count) {
+                const randomNumber = Math.floor(Math.random() * 100);
+                if (!numbers.includes(randomNumber)) {
+                    numbers.push(randomNumber);
+                }
+            }
+            return numbers;
+        }
+
+        function createCard(number) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.textContent = number;
+            card.setAttribute('draggable', 'true');
+
+            return card;
+        }
+
+        function initializeCards() {
+            const container = document.querySelector('.container');
+            const randomNumbers = generateRandomNumbers(6);
+
+            randomNumbers.forEach(number => {
+                const card = createCard(number);
+                container.appendChild(card);
+            });
+
+            enableDragAndDrop();
+        }
+
+        function enableDragAndDrop() {
+            const cards = document.querySelectorAll('.card');
+            let draggedCard = null;
+            let placeholder = null;
+
+            cards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    draggedCard = card;
+                    card.classList.add('dragging');
+
+                    placeholder = document.createElement('div');
+                    placeholder.className = 'card-placeholder';
+                    card.parentNode.insertBefore(placeholder, card.nextSibling);
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    placeholder.parentNode.replaceChild(draggedCard, placeholder);
+                    placeholder = null;
+                    draggedCard = null;
+                });
+
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (e.target.className === 'card' && e.target !== draggedCard) {
+                        const rect = e.target.getBoundingClientRect();
+                        const offset = e.clientX - rect.left;
+                        if (offset > rect.width / 2) {
+                            e.target.parentNode.insertBefore(placeholder, e.target.nextSibling);
+                        } else {
+                            e.target.parentNode.insertBefore(placeholder, e.target);
+                        }
+                    }
+                });
+            });
+        }
+
+        initializeCards();
+    </script>
+</body>
+</html>
